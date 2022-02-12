@@ -1,8 +1,10 @@
 package com.example.demo.companyController;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.demo.StockService.CompanyService;
 //import com.example.demo.exceptionhandler.CompanyCodeExistsException;
 import com.example.demo.exceptionhandler.CompanyCodeNotExistException;
+import com.example.demo.responseHandler.ResponseHandler;
 import com.example.demo.stockModel.Company;
 
 @RestController
@@ -32,10 +35,17 @@ public class companyController {
 		List<Company> stockList = CompanyService.getAllDetails();
 		if(stockList!=null)
 		{
-			return new ResponseEntity<List<Company>>(stockList, HttpStatus.OK);
+			//default way of implementation
+			//return new ResponseEntity<List<Company>>(stockList, HttpStatus.OK);
+			//Response Handler implemented
+			//return ResponseHandler.handleResponse("Retrieved all registered Company details", HttpStatus.OK, stockList);
+			//Implemented Caching along with response handler
+			CacheControl cacheControl = CacheControl.maxAge(2,TimeUnit.MINUTES);
+			return ResponseEntity.ok().cacheControl(cacheControl).body(ResponseHandler.handleResponse("Retrieved all registered Company details", HttpStatus.OK, stockList));
+			
 		}
 		return new ResponseEntity<String>("No Company list is found!",HttpStatus.NO_CONTENT);
-				
+		
 	}
 	
 	@PostMapping(value = "/company/register", consumes = "application/json; charset= utf-8")
@@ -43,7 +53,10 @@ public class companyController {
 	{
 		if(CompanyService.register(company)!= null && company.getTurnOver()>10)
 		{
-			return new ResponseEntity<Company>(company,HttpStatus.CREATED);
+			//default way of implementation
+			//return new ResponseEntity<Company>(company,HttpStatus.CREATED);
+			//Response Handler implemented
+			return ResponseHandler.handleResponse("Successfully registered the Company", HttpStatus.CREATED, company);
 		}
 		
 		return new ResponseEntity<String>("Unable to register Company",HttpStatus.CONFLICT);
@@ -57,6 +70,7 @@ public class companyController {
 			return new ResponseEntity<String>("Company record is deleted",HttpStatus.NO_CONTENT);
 		}
 		return new ResponseEntity<String>("Internal error while deleting the Company record",HttpStatus.CONFLICT);
+		
 	}
 	
 	@GetMapping("/company/info/{companyCode}")
@@ -64,7 +78,10 @@ public class companyController {
 	{
 		Company company = CompanyService.getInfo(companyCode);
 		if(company != null) {
-			return new ResponseEntity<Company>(company,HttpStatus.OK);
+			//default way of implementation
+			//return new ResponseEntity<Company>(company,HttpStatus.OK);
+			//Response Handler implemented
+			return ResponseHandler.handleResponse("Successfully retrieved the Company details", HttpStatus.OK, company);
 		}
 		return new ResponseEntity<String>("Company code not found",HttpStatus.CONFLICT);
 	}
@@ -84,9 +101,9 @@ public class companyController {
 	{
 		if(CompanyService.updateStockPrice(companyCode, company))
 		   {
-			   return new ResponseEntity<String>("Stock Price updated",HttpStatus.OK);
+			   return new ResponseEntity<String>("Added the Stock Price",HttpStatus.OK);
 		   }
-		   return new ResponseEntity<String>("Stock Price not updated",HttpStatus.CONFLICT);
+		   return new ResponseEntity<String>("Stock Price not added",HttpStatus.CONFLICT);
 	}
 
 }
