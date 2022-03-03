@@ -1,8 +1,16 @@
 package com.example.demo.StockService;
 
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.hibernate.query.criteria.internal.expression.function.CurrentDateFunction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -31,17 +39,30 @@ public class CompanyServiceImpl implements CompanyService{
 	@Override
 	public Company register(Company company) {
 		
-		Optional<Company> optionalCompany= companyrepository.findById(company.getCompanyCode());
+		//Optional<Company> optionalCompany= companyrepository.findById(company.getCompanyCode());
 		
 		/*
 		 * if(optionalCompany.isPresent()) { throw new CompanyCodeExistsException(null);
 		 * }
 		 */
 		
-		if(company!=null && companyrepository.findById(company.getCompanyCode()).isEmpty())
+		if(company!=null && companyrepository.findById(company.getCompanyCode()).isEmpty() && company.getTurnOver()>10)
 		{
 			return companyrepository.saveAndFlush(company);
 		
+		}
+		
+		return null;
+	}
+	
+	@Override
+	public Company updateInfo(Company company) {
+		
+		Optional<Company> optionalCompany= companyrepository.findById(company.getCompanyCode());
+		
+		if(optionalCompany.isPresent())
+		{
+			return companyrepository.saveAndFlush(company);
 		}
 		
 		return null;
@@ -89,6 +110,7 @@ public class CompanyServiceImpl implements CompanyService{
 		{
 			Company company1 = companyrepository.getById(companyCode);
 			company1.setStockPrice(company.getStockPrice());
+			company1.setDate(java.time.LocalDate.now());
 			companyrepository.saveAndFlush(company1);
 			return true;
 		}
@@ -103,11 +125,70 @@ public class CompanyServiceImpl implements CompanyService{
 		{
 			Company company1 = companyrepository.getById(companyCode);
 			company1.setStockPrice(company.getStockPrice());
+			company1.setDate(java.time.LocalDate.now());
 			companyrepository.saveAndFlush(company1);
 			return true;
 		}
 		
 		return false;
 	}
+
+	public static final List<String> SUPPORTED_FORMATS = Arrays.asList("dd-MM-yyyy", "yyyy-MM-dd");
+    public static final List<DateTimeFormatter> DATE_TIME_FORMATTERS = SUPPORTED_FORMATS
+            .stream()
+            .map(DateTimeFormatter::ofPattern)
+            .collect(Collectors.toList());
+    public LocalDate convert(String s) {
+
+        for (DateTimeFormatter dateTimeFormatter : DATE_TIME_FORMATTERS) {
+            try {
+                return LocalDate.parse(s, dateTimeFormatter);
+            } catch (DateTimeParseException ex) {
+                // deliberate empty block so that all parsers run
+            }
+        }
+
+        throw new DateTimeException(String.format("unable to parse (%s) supported formats are %s",
+                s, String.join(", ", SUPPORTED_FORMATS)));
+    }
+
+	@Override
+	public Company maxStock() {
+		 
+		Company c = companyrepository.maxStock();
+		if(c!=null)
+		{
+			return c;
+		}
+		return null;
+	}
+
+	@Override
+	public Company minStock() {
+		Company c = companyrepository.minStock();
+		if(c!=null)
+		{
+			return c;
+		}
+		return null;
+	}
+
+	@Override
+	public double avgStock() {
+		return companyrepository.avgStock();
+	}
+
+	
+	/*
+	 * @Override public List<Company> customApi(Company company) { // TODO
+	 * Auto-generated method stub List<Company> stockList =
+	 * companyrepository.customApi(company); if(stockList!=null &&
+	 * stockList.size()>0) { return stockList; } return null;
+	 * 
+	 * }
+	 */
+	 
+
+	
 
 }

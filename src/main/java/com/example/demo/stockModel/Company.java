@@ -1,5 +1,8 @@
 package com.example.demo.stockModel;
 
+import java.time.LocalDate;
+import java.util.Date;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -15,7 +18,24 @@ public class Company {
 	private String companyWebsite;
 	private String stockExchange;
 	private double stockPrice;
+	private LocalDate date;
+	/*
+	 * private LocalDate startDate; private LocalDate endDate;
+	 */
 	
+	/*
+	 * public LocalDate getStartDate() { return startDate; } public void
+	 * setStartDate(LocalDate startDate) { this.startDate = startDate; } public
+	 * LocalDate getEndDate() { return endDate; } public void setEndDate(LocalDate
+	 * endDate) { this.endDate = endDate;
+	 */
+	//}
+	public LocalDate getDate() {
+		return date;
+	}
+	public void setDate(LocalDate localDate) {
+		this.date = localDate;
+	}
 	public Company() {
 		super();
 		// TODO Auto-generated constructor stub
