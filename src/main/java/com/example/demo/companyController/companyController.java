@@ -37,7 +37,7 @@ public class companyController {
 	@GetMapping("/company/getall")
 	public ResponseEntity<?> getAllDetails()
 	{
-		System.out.println("in  cntlr");
+		//System.out.println("in  cntlr");
 		List<Company> stockList = CompanyService.getAllDetails();
 		if(stockList!=null)
 		{
